@@ -1,0 +1,15 @@
+{{template "ui_top_wrapper" . }}
+{{template "ui_banner"}}
+<div class="card">
+    {{template "ui_header" .welcomeMessage}}
+    <div class="mb-15"></div>
+
+    {{ if .signedIn }}
+        <a class="swatch-primary button outline mb-10" href="{{.urls.settings_url}}">settings</a>
+        <a class="swatch-primary button outline mb-10" href="{{.urls.invite_url}}">invite</a>
+        <a class="swatch-primary button outline" href="{{.logout_url}}">logout</a>
+    {{ else }}
+        <a class="swatch-primary button outline" href="{{.urls.login_url}}">login</a>
+    {{ end }}
+</div>
+{{template "ui_bottom_wrapper" . }}

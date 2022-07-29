@@ -1,0 +1,11 @@
+{{template "ui_top_wrapper" . }}
+<div class="card">
+    <div class="h1 swatch-warn">{{.status}}</div>
+    <div style="text-align: center;">
+    <p class="swatch-white">{{.message}}</p>
+    <p class="swatch-white">{{.reason}}</p>
+    <p class="swatch-white">{{.hint}}</p>
+    <p class="swatch-white">{{.code}}</p>
+    </div>
+</div>
+{{template "ui_bottom_wrapper" . }}

@@ -1,0 +1,133 @@
+version: '3.7'
+services:
+  traefik:
+    image: traefik:v2.6.6
+    networks:
+      - intranet
+    command:
+      - "--log.level=debug"
+      - "--entryPoints.https.address=:4000"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "4000:4000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "certs:/certs"
+
+  kratos-migrate:
+    image: oryd/kratos:v0.10.1
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./contrib/docker-compose/development
+        target: /etc/config/kratos
+    command: -c /etc/config/kratos/kratos.yml migrate sql -e --yes
+    restart: on-failure
+    networks:
+      - intranet
+  kratos:
+    depends_on:
+      - kratos-migrate
+    image: oryd/kratos:v0.10.1
+    restart: unless-stopped
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+      - LOG_LEVEL=trace
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./contrib/docker-compose/development
+        target: /etc/config/kratos
+    networks:
+      - intranet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kratos.entrypoints=https"
+      - "traefik.http.routers.kratos.rule=Host(`localhost`) && (PathPrefix(`/sessions`) || PathPrefix(`/self-service`) || Path(`/.well-known/ory/webauthn.js`))"
+      - "traefik.http.routers.kratos.service=kratos"
+      - "traefik.http.routers.kratos.tls=true"
+      - "traefik.http.services.kratos.loadbalancer.server.port=4433"
+
+  hydra:
+    image: oryd/hydra:v1.11.8
+    ports:
+      - "6655:6655" # Port for hydra token user
+    command: serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
+    volumes:
+      - type: volume
+        source: hydra-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./contrib/docker-compose/development
+        target: /etc/config/hydra
+    environment:
+      - DSN=postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    restart: unless-stopped
+    depends_on:
+      - hydra-migrate
+    networks:
+      - intranet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hydra.entrypoints=https"
+      - "traefik.http.routers.hydra.rule=Host(`localhost`) && (PathPrefix(`/connect`) || PathPrefix(`/oauth2`) || PathPrefix(`/userinfo`) || Path(`/.well-known/jwks.json`) || Path(`/.well-known/openid-configuration`))"
+      - "traefik.http.routers.hydra.service=hydra"
+      - "traefik.http.routers.hydra.tls=true"
+      - "traefik.http.services.hydra.loadbalancer.server.port=4444"
+  hydra-migrate:
+    image: oryd/hydra:v1.11.8
+    environment:
+      - DSN=postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate -c /etc/config/hydra/hydra.yml sql -e --yes
+    volumes:
+      - type: volume
+        source: hydra-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./contrib/docker-compose/development
+        target: /etc/config/hydra
+    restart: on-failure
+    networks:
+      - intranet
+  postgresd:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=hydra
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=hydra
+    networks:
+      - intranet
+
+  ui:
+    image: cosmtrek/air
+    working_dir: /workspace
+    volumes:
+      - ".:/workspace"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ui.entrypoints=https"
+      - "traefik.http.routers.ui.rule=Host(`localhost`) && (PathPrefix(`/`) || PathPrefix(`/flow`))"
+      - "traefik.http.routers.ui.service=ui"
+      - "traefik.http.routers.ui.tls=true"
+      - "traefik.http.services.ui.loadbalancer.server.port=4455"
+    networks:
+      - intranet
+
+networks:
+  intranet:
+volumes:
+  kratos-sqlite:
+  hydra-sqlite:
+  certs:

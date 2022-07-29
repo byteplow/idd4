@@ -1,0 +1,382 @@
+{{define "ui_top_wrapper"}}
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<style >
+    body {
+        font-family: "Roboto",sans-serif;
+        line-height: 1.6;
+        color: #fff;
+        background-color: rgb(38, 38, 38);
+    }
+
+    form {
+        margin: 0;
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+    }
+
+    .column {
+        width: 100%;
+        max-width: min(30rem, 100%);
+        margin: auto;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .swatch-white {
+        color: #fff;
+    }
+
+    .input.outline.swatch-white, .button.outline.swatch-white {
+        outline-color: #fff;
+        color: #fff;
+    }
+
+    .input.solid.swatch-white, .button.solid.swatch-white {
+        color: #000;
+        background-color: #f3f3f3;
+    }
+
+    .button.solid.swatch-white:hover, .button.solid.swatch-white:focus {
+        background-color: #d7d7d7;
+    }
+
+    .button.solid.swatch-white:active {
+        background-color: #8f8f8f;
+    }
+
+    .swatch-primary {
+        color: #1266f1;
+    }
+
+    .input.outline.swatch-primary, .button.outline.swatch-primary {
+        outline-color: #1266f1;
+        color: #1266f1;
+    }
+
+    .input.solid.swatch-primary, .button.solid.swatch-primary {
+        color: #fff;
+        background-color: #1266f1;
+    }
+
+    .button.solid.swatch-primary:hover, .button.solid.swatch-primary:focus {
+        background-color: #0c56d0;
+    }
+
+    .button.solid.swatch-primary:active {
+        background-color: #093d94;
+    }
+
+    .swatch-warn {
+        color: #f93154;
+    }
+
+    .input, .button {
+        display: block;
+        padding: .33em .75em;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.6;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: .25rem;
+        border: none;
+        transition: all .1s linear;
+        box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%), 0 2px 10px 0 rgb(0 0 0 / 10%);
+        text-decoration: none;
+    }
+
+    .button {
+        text-align: center;
+    }
+
+    .input, button.button {
+        width: 100%;
+    }
+
+    .outline {
+        min-height: auto;
+        padding: .33em .75em;
+        outline-style: solid;
+        outline-width: 1px;
+        border: none;
+        background: transparent;
+    }
+
+    .button.outline:hover, .button.outline:focus, .button.outline.active, .input.outline:active, .input.outline:focus {
+        outline-width: 2px;
+    }
+
+    .button.solid:hover, .button.solid:focus {
+        box-shadow: 0 4px 10px 0 rgba(0,0,0,.2),0 4px 20px 0 rgba(0,0,0,.1);
+    }
+
+    .button.solid:active {
+        box-shadow: 0 4px 10px 0 rgba(0,0,0,.2),0 4px 20px 0 rgba(0,0,0,.1);
+    }
+
+    .label {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .info {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 0.5rem;
+    }
+
+    .h1 {
+        efont-family: 'Mochiy Pop One', normal;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .mb-05 {
+        margin-bottom: 0.5rem;
+    }
+
+    .mb-10 {
+        margin-bottom: 1rem;
+    }
+
+    .mb-15 {
+        margin-bottom: 1.5rem;
+    }
+
+    .mb-20 {
+        margin-bottom: 2rem;
+    }
+
+    .mb-30 {
+        margin-bottom: 3rem;
+    }
+
+    .fs-09 {
+        font-size: 0.9rem;
+    }
+
+    @font-face {
+        font-family: 'Mochiy Pop One';
+        font-style: normal;
+        font-weight: 400;
+        src: url('/static/fonts/mochiy-pop-one-v7-latin-regular.eot');
+        src: local(''),
+            url('/static/fonts/mochiy-pop-one-v7-latin-regular.eot?#iefix') format('embedded-opentype'),
+            url('/static/fonts/mochiy-pop-one-v7-latin-regular.woff2') format('woff2'),
+            url('/static/fonts/mochiy-pop-one-v7-latin-regular.woff') format('woff'),
+            url('/static/fonts/mochiy-pop-one-v7-latin-regular.ttf') format('truetype'),
+            url('/static/fonts/mochiy-pop-one-v7-latin-regular.svg#MochiyPopOne') format('svg');
+    }
+
+    .logo {
+        font-family: 'Mochiy Pop One', normal;
+        font-size: 3.5rem;
+        line-height: 1.6em;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .img-centered {
+        display: flex;
+        width: 100%;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .img-centered img {
+        width: 100%;
+        height: auto;
+    }
+
+    code {
+        overflow-wrap: anywhere;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="column">
+{{end}}
+
+{{define "ui_bottom_wrapper"}}
+</div>
+</div>
+</body>
+</html>
+{{end}}
+
+{{define "ui_header"}}
+    <div class="h1">{{.}}</div>
+{{end}}
+
+{{define "ui_banner"}}
+    <div class="swatch-primary logo">ID.D4RK.IO</div>
+{{end}}
+
+{{define "ui_script"}}
+    <script
+        {{if or .attributes.async false}}async{{end}}
+        crossorigin="{{.attributes.crossorigin}}"
+        data-testid="node/script/{{.attributes.id}}"
+        integrity="{{.attributes.integrity}}"
+        nonce="{{.attributes.nonce}}"
+        referrerpolicy="{{.attributes.referrerpolicy}}"
+        src="{{.attributes.src}}"
+        type="{{.attributes.type}}"
+    ></script>
+
+    {{template "ui_node_message" .messages}}
+{{end}}
+
+{{define "ui_img"}}
+    <div class="img-centered">
+        <img
+            height={{.attributes.height}}
+            data-testid="node/image/{{.attributes.id}}"
+            alt='{{or .node.meta.label.text ""}}'
+            width="{{.attributes.width}}"
+            src="{{ .attributes.src | toTemplateUrl }}"
+        ></img>
+    </div>
+
+    {{template "ui_node_message" .messages}}
+{{end}}
+
+{{define "ui_text"}}
+    <div class="mb-15">
+        {{if .meta}}
+            <label
+                data-testid="node/text/{{.attributes.id}}/label"
+                class="swatch-white label"
+            >{{.meta.label.text}}</label>
+        {{end}}
+
+        <code
+            data-testid="node/text/{{.attributes.id}}/text"
+        >{{.attributes.text.text}}</code>
+
+        {{template "ui_node_message" .messages}}
+    </div>
+{{end}}
+
+{{ define "ui_input_button" }}
+    <div class="mb-15">
+        <button
+            {{if .attributes.disabled}}disabled{{end}}
+            class="swatch-primary button solid"
+            onclick='{{(or .attributes.onclick "") | toTemplateJs}}'
+            name="{{.attributes.name}}"
+            type="{{.attributes.type}}"
+            value='{{.attributes.value}}'
+        >{{if .meta}}{{.meta.label.text}}{{end}}</button>
+
+        {{template "ui_node_message" .messages}}
+    </div>
+{{end}}
+
+{{ define "ui_input_hidden" }}
+    <input
+        name="{{.attributes.name}}"
+        type="{{.attributes.type}}"
+        value='{{or .attributes.value ""}}'
+    >
+{{end}}
+
+{{ define "ui_input_text" }}
+    <div class="mb-15">
+        {{if .meta}}
+            <label class="swatch-white label">{{.meta.label.text}}</label>
+        {{end}}
+
+        <!-- required indicator ? would be useful-->
+        <!-- placeholder ? -->
+        <input
+            {{if .attributes.disabled}}disabled{{end}}
+            class="swatch-white input outline mb-05"
+            name="{{.attributes.name}}"
+            type="{{.attributes.type}}"
+            value='{{or .attributes.value ""}}'
+            data-testid="node/input/{{.attributes.name}}"
+        >
+
+        {{template "ui_node_message" .messages}}
+    </div>
+{{end}}
+
+{{define "ui_node_message"}}
+    {{range .}}
+        <div
+            class='info {{if eq .type "error"}}swatch-warn{{else}}swatch-white{{end}} fs-09'
+        >{{.text}}</div>
+    {{end}}
+{{end}}
+
+{{define "ui_message"}}
+    {{range .messages}}
+        <div class="info {{if eq .type "error"}}swatch-warn{{else}}swatch-white{{end}}">{{.text}}</div>
+    {{end}}
+{{end}}
+
+{{define "ui_node"}}
+    {{if eq .type "script"}}{{template "ui_script" .}}{{end}}
+    {{if eq .type "a"}}<p>ui: anchor node not implemented</p>{{end}}
+    {{if eq .type "img"}}{{template "ui_img" .}}{{end}}
+    {{if eq .type "text"}}{{template "ui_text" .}}{{end}}
+
+    {{if eq .type "input"}}
+        {{if eq .attributes.type "button"}}{{template "ui_input_button" .}}{{end}}
+        {{if eq .attributes.type "submit"}}{{template "ui_input_button" .}}{{end}}
+        {{if eq .attributes.type "hidden"}}{{template "ui_input_hidden" .}}{{end}}
+
+        {{if eq .attributes.type "text"}}{{template "ui_input_text" .}}{{end}}
+        {{if eq .attributes.type "password"}}{{template "ui_input_text" .}}{{end}}
+        {{if eq .attributes.type "number"}}{{template "ui_input_text" .}}{{end}}
+        {{if eq .attributes.type "email"}}{{template "ui_input_text" .}}{{end}}
+        {{if eq .attributes.type "url"}}{{template "ui_input_text" .}}{{end}}
+        
+        {{if eq .attributes.type "datetime-local"}}<p>ui: input-checkbox node not implemented</p>{{end}}
+        {{if eq .attributes.type "date"}}<p>ui: input-checkbox node not implemented</p>{{end}}
+        {{if eq .attributes.type "checkbox"}}}<p>ui: input-checkbox node not implemented</p>{{end}}
+    {{end}}
+{{end}}
+
+{{define "ui_card"}}
+    <div class="card">
+        {{template "ui_header" .title}}
+        {{template "ui_from" .}}
+    </div>
+{{end}}
+
+{{define "ui"}}
+    {{if and .ui.messages (gt (len .ui.messages) 0)}}
+        <div class="card">
+            {{template "ui_message" .ui}}
+        </div>
+    {{end}}
+
+    {{range .ui.groups}}
+        {{template "ui_card" .}}
+    {{end}}
+{{end}}
+
+{{define "ui_from"}}
+    {{template "ui_message" .}}
+    <form method="{{.method}}" action="{{ .action }}">
+        {{range .nodes}}
+            {{template "ui_node" .}}
+        {{end}}
+    </form>
+{{end}}
