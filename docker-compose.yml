@@ -53,7 +53,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.kratos.entrypoints=https"
-      - "traefik.http.routers.kratos.rule=Host(`localhost`) && (PathPrefix(`/sessions`) || PathPrefix(`/self-service`) || Path(`/.well-known/ory/webauthn.js`))"
+      - "traefik.http.routers.kratos.rule=Host(`localhost`) && (PathPrefix(`/sessions`) || PathPrefix(`/self-service`) || Path(`/.well-known/ory/webauthn.js`)) && !(Path(`/self-service/registration`) && Method(`POST`))"
       - "traefik.http.routers.kratos.service=kratos"
       - "traefik.http.routers.kratos.tls=true"
       - "traefik.http.services.kratos.loadbalancer.server.port=4433"
@@ -118,7 +118,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ui.entrypoints=https"
-      - "traefik.http.routers.ui.rule=Host(`localhost`) && (PathPrefix(`/`) || PathPrefix(`/flow`))"
+      - "traefik.http.routers.ui.rule=Host(`localhost`) && (PathPrefix(`/`) || PathPrefix(`/flow`) || (Path(`/self-service/registration`) && Method(`POST`)))"
       - "traefik.http.routers.ui.service=ui"
       - "traefik.http.routers.ui.tls=true"
       - "traefik.http.services.ui.loadbalancer.server.port=4455"

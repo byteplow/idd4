@@ -33,6 +33,7 @@ func InitRouter() *gin.Engine {
 	r.GET("/invite", kratosui.GetInvite)
 	r.GET("/consent", hydraui.GetConsent)
 	r.GET("/flow/login", hydraui.GetLogin)
+	r.POST("/self-service/registration", kratosui.PostRegistration)
 
 	return r
 }
