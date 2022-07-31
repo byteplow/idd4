@@ -1,10 +1,16 @@
 package config
 
 type Configuration struct {
-	Urls   map[string]string
-	Hydra  *Hydra
-	Kratos *Kratos
-	Server *Server
+	Urls     map[string]string
+	Hydra    *Hydra
+	Kratos   *Kratos
+	Server   *Server
+	Messages *Messages
+}
+
+type Messages struct {
+	NoInviteLinkErrorMessage      string
+	InvalidInviteLinkErrorMessage string
 }
 
 type Hydra struct {
@@ -31,11 +37,12 @@ var Config *Configuration
 func Setup() error {
 	Config = &Configuration{
 		Urls: map[string]string{
-			"hydra_login_url": "https://localhost:4000/flow/login",
-			"welcome_url":     "https://localhost:4000/",
-			"settings_url":    "https://localhost:4000/self-service/settings/browser",
-			"login_url":       "https://localhost:4000/self-service/login/browser",
-			"invite_url":      "https://localhost:4000/invite",
+			"hydra_login_url":           "https://localhost:4000/flow/login",
+			"welcome_url":               "https://localhost:4000/",
+			"settings_url":              "https://localhost:4000/self-service/settings/browser",
+			"login_url":                 "https://localhost:4000/self-service/login/browser",
+			"invite_url":                "https://localhost:4000/invite",
+			"registration_url_internal": "http://kratos:4433/self-service/registration",
 		},
 		Hydra: &Hydra{
 			Session: &Session{
@@ -50,6 +57,10 @@ func Setup() error {
 		Server: &Server{
 			RunMode:  "debug",
 			Endpoint: ":4455",
+		},
+		Messages: &Messages{
+			NoInviteLinkErrorMessage:      "Registration without an invite link is forbidden.",
+			InvalidInviteLinkErrorMessage: "Invite link is invalid.",
 		},
 	}
 
