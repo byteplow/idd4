@@ -1,7 +1,11 @@
 {{template "ui_top_wrapper" . }}
+{{template "ui_banner"}}
 <div class="card">
-    {{template "ui_header" "Invite"}}
-    <div class="mb-10"><code class="swatch-white">{{.invite}}</code></div>
+    {{template "ui_header" "Invites"}}
+    {{template "ui_from" .ui}}
+</div>
+
+<div class="card">
     <a class="swatch-primary button outline" href="{{.urls.welcome_url}}">back</a>
 </div>
 {{template "ui_bottom_wrapper" . }}

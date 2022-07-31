@@ -4,6 +4,7 @@ type Configuration struct {
 	Urls     map[string]string
 	Hydra    *Hydra
 	Kratos   *Kratos
+	Keto     *Keto
 	Server   *Server
 	Messages *Messages
 }
@@ -32,6 +33,11 @@ type Server struct {
 	Endpoint string
 }
 
+type Keto struct {
+	WriteApiUrl string
+	ReadApiUrl  string
+}
+
 var Config *Configuration
 
 func Setup() error {
@@ -43,6 +49,7 @@ func Setup() error {
 			"login_url":                 "https://localhost:4000/self-service/login/browser",
 			"invite_url":                "https://localhost:4000/invite",
 			"registration_url_internal": "http://kratos:4433/self-service/registration",
+			"registration_url":          "https://localhost:4000/self-service/registration/browser",
 		},
 		Hydra: &Hydra{
 			Session: &Session{
@@ -53,6 +60,10 @@ func Setup() error {
 		Kratos: &Kratos{
 			AdminApiUrl:  "http://kratos:4434",
 			PublicApiUrl: "http://kratos:4433",
+		},
+		Keto: &Keto{
+			ReadApiUrl:  "http://keto:4466",
+			WriteApiUrl: "http://keto:4467",
 		},
 		Server: &Server{
 			RunMode:  "debug",

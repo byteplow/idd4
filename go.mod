@@ -27,6 +27,7 @@ require (
 require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang/protobuf v1.5.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/ory/hydra-client-go v1.11.8
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558 // indirect
