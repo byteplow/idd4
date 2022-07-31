@@ -1,11 +1,14 @@
 package util
 
 import (
+	"context"
 	"encoding/json"
 	"html/template"
 	"log"
 	"net/url"
 
+	"github.com/byteplow/idd4/internal/container"
+	"github.com/gin-gonic/gin"
 	kratos "github.com/ory/kratos-client-go"
 )
 
@@ -96,4 +99,24 @@ func ToTemplateUrl(str string) template.URL {
 
 func ToTemplateJs(str string) template.JS {
 	return template.JS(str)
+}
+
+func RequireActiveKratosSession(c *gin.Context) *kratos.Session {
+	cookie, err := c.Request.Cookie("ory_kratos_session")
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	session, _, err := container.KratosPublicClient.ToSession(context.Background()).Cookie(cookie.String()).Execute()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	if !*session.Active {
+		return nil
+	}
+
+	return session
 }

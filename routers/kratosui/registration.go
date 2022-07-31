@@ -9,10 +9,13 @@ import (
 
 	"github.com/byteplow/idd4/internal/config"
 	"github.com/byteplow/idd4/internal/container"
+	"github.com/byteplow/idd4/internal/invite"
 	"github.com/byteplow/idd4/internal/util"
 	"github.com/gin-gonic/gin"
 	kratos "github.com/ory/kratos-client-go"
 )
+
+var Endpoint_registration = "./self-service/registration"
 
 var hopHeaders = []string{
 	"Connection",
@@ -86,12 +89,13 @@ func PostRegistration(c *gin.Context) {
 		panic(err)
 	}
 
-	invite := u.Query().Get("invite")
-	if invite == "" {
+	i := u.Query().Get("invite")
+	if i == "" {
 		c.Redirect(http.StatusSeeOther, c.GetHeader("referer"))
 	}
 
-	if invite != "wellknown" {
+	//todo: remove wellknown
+	if i != "wellknown" && !invite.CheckInvite(i, Endpoint_registration) {
 		c.Redirect(http.StatusSeeOther, util.UriWithQuery("error", c.GetHeader("referer"), "invalid_invite"))
 		return
 	}
@@ -137,6 +141,11 @@ func PostRegistration(c *gin.Context) {
 	}
 
 	c.Status(res.StatusCode)
+
+	//todo: remove wellknown
+	if res.StatusCode == 303 && i != "wellknown" {
+		invite.InvalidateInvite(i, "")
+	}
 }
 
 func deleteHopHeader(header *http.Header) {

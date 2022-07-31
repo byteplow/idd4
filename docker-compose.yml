@@ -110,6 +110,21 @@ services:
     networks:
       - intranet
 
+  keto:
+    image: oryd/keto:v0.8.0-alpha.2
+    ports:
+      - "4466:4466"
+      - "4467:4467"
+    command: serve -c /home/ory/keto.yml
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./contrib/docker-compose/development/keto.yml
+        target: /home/ory/keto.yml
+    networks:
+      - intranet
+
+
   ui:
     image: cosmtrek/air
     working_dir: /workspace

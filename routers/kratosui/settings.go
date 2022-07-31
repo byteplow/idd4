@@ -12,26 +12,12 @@ import (
 )
 
 func GetSettings(c *gin.Context) {
-	loginUrl := util.UrlWithReturnTo(config.Config.Urls["login_url"], config.Config.Urls["settings_url"])
-
-	cookie, err := c.Request.Cookie("ory_kratos_session")
-	if err != nil {
-		log.Println(err)
-		c.Redirect(http.StatusSeeOther, loginUrl)
+	if session := util.RequireActiveKratosSession(c); session == nil {
+		c.Redirect(http.StatusSeeOther, util.UrlWithReturnTo(config.Config.Urls["login_url"], config.Config.Urls["settings_url"]))
 		return
 	}
 
-	session, _, err := container.KratosPublicClient.ToSession(context.Background()).Cookie(cookie.String()).Execute()
-	if err != nil {
-		log.Println(err)
-		c.Redirect(http.StatusSeeOther, loginUrl)
-		return
-	}
-
-	if !*session.Active {
-		c.Redirect(http.StatusSeeOther, loginUrl)
-		return
-	}
+	cookie, _ := c.Request.Cookie("ory_kratos_session")
 
 	id, ok := c.GetQuery("flow")
 	if !ok {

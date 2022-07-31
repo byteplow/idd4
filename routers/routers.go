@@ -6,6 +6,7 @@ import (
 
 	"github.com/byteplow/idd4/internal/util"
 	"github.com/byteplow/idd4/routers/hydraui"
+	"github.com/byteplow/idd4/routers/idd4"
 	"github.com/byteplow/idd4/routers/kratosui"
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +31,8 @@ func InitRouter() *gin.Engine {
 	r.GET("/welcome", kratosui.GetWelcome)
 	r.GET("/settings", kratosui.GetSettings)
 	r.GET("/", kratosui.GetWelcome)
-	r.GET("/invite", kratosui.GetInvite)
+	r.GET("/invite", idd4.GetInvite)
+	r.POST("/flow/invite", idd4.PostInvite)
 	r.GET("/consent", hydraui.GetConsent)
 	r.GET("/flow/login", hydraui.GetLogin)
 	r.POST("/self-service/registration", kratosui.PostRegistration)
