@@ -123,13 +123,13 @@ services:
         target: /home/ory/keto.yml
     networks:
       - intranet
-
-
+      
   ui:
     image: cosmtrek/air
     working_dir: /workspace
     volumes:
       - ".:/workspace"
+      - "./contrib/docker-compose/development:/etc/byteplow/idd4"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ui.entrypoints=https"

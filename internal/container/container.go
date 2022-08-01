@@ -14,6 +14,12 @@ var KetoReadClient keto.ReadApi
 var KetoWriteClient keto.WriteApi
 
 func Setup() error {
+	config.Listen(initClients)
+
+	return nil
+}
+
+func initClients() error {
 	hydraAdminConf := hydra.NewConfiguration()
 	hydraAdminConf.Servers = []hydra.ServerConfiguration{
 		{
