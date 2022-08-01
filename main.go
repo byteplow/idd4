@@ -11,11 +11,14 @@ import (
 )
 
 func init() {
-	config.Setup()
 	container.Setup()
 }
 
 func main() {
+	if err := config.WatchConfig("/etc/byteplow/idd4/idd4.yml"); err != nil {
+		log.Fatal(err)
+	}
+
 	gin.SetMode(config.Config.Server.RunMode)
 
 	router := routers.InitRouter()
