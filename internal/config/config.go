@@ -2,10 +2,9 @@ package config
 
 import (
 	"errors"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/url"
-	"os"
 
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v2"
@@ -129,11 +128,19 @@ func checkConfig(c *Configuration) error {
 	return nil
 }
 
-func loadConfig(r io.Reader) (*Configuration, error) {
-	c := defaultConfig()
-	if err := yaml.NewDecoder(r).Decode(c); err != nil {
-		log.Println("file Decode")
+func loadConfig(path string) (*Configuration, error) {
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
 		return nil, err
+	}
+
+	c := defaultConfig()
+
+	if len(bytes) > 0 {
+		if err := yaml.Unmarshal(bytes, c); err != nil {
+			log.Println("file Decode")
+			return nil, err
+		}
 	}
 
 	if err := checkConfig(c); err != nil {
@@ -160,16 +167,10 @@ func notify() error {
 
 func LoadConfig(path string) error {
 	log.Println("Loading config")
-	file, err := os.Open(path)
-	if err != nil {
-		log.Println("file open failed")
-		return err
-	}
-	defer file.Close()
 
 	backup := Config
 
-	c, err := loadConfig(file)
+	c, err := loadConfig(path)
 	if err != nil {
 		return err
 	}
