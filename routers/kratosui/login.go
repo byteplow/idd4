@@ -3,6 +3,7 @@ package kratosui
 import (
 	"context"
 	"net/http"
+	"log"
 
 	"github.com/byteplow/idd4/internal/config"
 	"github.com/byteplow/idd4/internal/container"
@@ -20,6 +21,7 @@ func GetLogin(c *gin.Context) {
 
 	flow, _, err := container.KratosPublicClient.GetSelfServiceLoginFlow(context.Background()).Cookie(cookie).Id(id).Execute()
 	if err != nil {
+		log.Println(err)
 		c.Redirect(http.StatusSeeOther, config.Config.Urls["welcome_url"])
 		return
 	}

@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-keto
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: keto
+spec:
+  replicas: 1
+  strategy: 
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: keto
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: keto
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/keto/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        - name: automigrate
+          image: {{ include "keto.image" . }}
+          imagePullPolicy: {{ .Values.keto.image.pullPolicy | quote }}
+          command: ["keto"]
+          args: ["migrate", "up", "-y", "--config", "/etc/keto/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/keto
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      containers:
+        - name: keto
+          image: {{ include "keto.image" . }}
+          imagePullPolicy: {{ .Values.keto.image.pullPolicy | quote }}
+          command: ["keto"]
+          args: ["serve", "all" , "--config" , "/etc/keto/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+            - name: SECRETS_DEFAULT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-keto
+                  key: secretsDefault
+                  optional: true
+          ports:
+            - name: grpc-read
+              containerPort: 4466
+              protocol: TCP
+            - name: grpc-write
+              containerPort: 4467
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: 4467
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 4467
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 4467
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            failureThreshold: 60
+            successThreshold: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/keto
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "common.names.fullname" . }}-keto
+        - name: sqlite
+          emptyDir: {} # todo

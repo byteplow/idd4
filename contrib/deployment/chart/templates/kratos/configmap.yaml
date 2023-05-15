@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" . }}-kratos
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: kratos
+data:
+  config.yaml: |-
+    version: v0.10.1
+    serve:
+      public:
+        base_url: https://{{ .Values.config.hostname }}/
+        port: 4433
+      admin:
+        base_url: https://{{ include "common.names.fullname" . }}-kratos-admin/
+        port: 4434
+    expose-metrics-port: 4434
+    identity:
+      default_schema_id: default
+      schemas:
+        - id: default
+          url: file:///etc/kratos/identity.schema.json
+    selfservice:
+      default_browser_return_url: https://{{ .Values.config.hostname }}/
+      allowed_return_urls:
+        - https://{{ .Values.config.hostname }}/
+      methods:
+        password:
+          enabled: true
+        totp:
+          enabled: true
+        webauthn:
+          enabled: true
+          config:
+            rp:
+              id: {{ .Values.config.hostname }}
+              display_name: Ory Foundation # todo
+              icon: http://www.ory.sh/an-icon.png
+              origin: https://{{ .Values.config.hostname }}/login
+            passwordless: true
+      flows:
+        error:
+          ui_url: https://{{ .Values.config.hostname }}/error
+        settings:
+          ui_url: https://{{ .Values.config.hostname }}/settings
+          privileged_session_max_age: 15m
+        recovery:
+          enabled: false
+        verification:
+          enabled: false
+        logout:
+          after:
+            default_browser_return_url: https://{{ .Values.config.hostname }}/login
+        login:
+          ui_url: https://{{ .Values.config.hostname }}/login
+          lifespan: 10m
+        registration:
+          lifespan: 10m
+          ui_url: https://{{ .Values.config.hostname }}/registration
+          after:
+            password:
+              hooks:
+                - hook: session
+    log:
+      level: debug # todo
+      format: text
+      leak_sensitive_values: false
+    ciphers:
+      algorithm: xchacha20-poly1305
+    hashers:
+      algorithm: bcrypt
+      bcrypt:
+        cost: 8
+    courier:
+      smtp:
+        connection_uri: "smtps://nouser:notapassword@notused:1025/?skip_ssl_verify=true"
+  identity.schema.json: |-
+    {
+      "$id": "https://schemas.ory.sh/presets/kratos/quickstart/email-password/identity.schema.json",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "properties": {
+        "traits": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "title": "Username",
+              "ory.sh/kratos": {
+                "credentials": {
+                  "password": {
+                    "identifier": true
+                  },
+                  "webauthn": {
+                    "identifier": true
+                  }
+                }
+              }
+            },
+            "email": {
+              "type": "string",
+              "title": "Email",
+              "format": "email",
+              "ory.sh/kratos": {
+                "credentials": {
+                  "password": {
+                    "identifier": true
+                  },
+                  "webauthn": {
+                    "identifier": true
+                  }
+                }
+              }
+            },
+            "firstname": {
+              "type": "string",
+              "title": "First name"
+            },
+            "surename": {
+              "type": "string",
+              "title": "Surename"
+            }
+          },
+          "required": [
+            "username"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }

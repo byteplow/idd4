@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-hydra
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: hydra
+spec:
+  replicas: 1
+  strategy: 
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: hydra
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: hydra
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/hydra/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        - name: automigrate
+          image: {{ include "hydra.image" . }}
+          imagePullPolicy: {{ .Values.hydra.image.pullPolicy | quote }}
+          command: ["hydra"]
+          args: ["migrate", "sql", "-e", "--yes", "--config", "/etc/hydra/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/hydra
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      containers:
+        - name: hydra
+          image: {{ include "hydra.image" . }}
+          imagePullPolicy: {{ .Values.hydra.image.pullPolicy | quote }}
+          command: ["hydra"]
+          args: ["serve", "all" ,"--dangerous-force-http" , "--config" , "/etc/hydra/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+            - name: SECRETS_SYSTEM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-hydra
+                  key: secretsSystem
+                  optional: true
+            - name: SECRETS_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-hydra
+                  key: secretsCookie
+                  optional: true
+            - name: OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-hydra
+                  key: secretOidcSubjectIdentifiersPairwiseSalt
+                  optional: true
+            
+          ports:
+            - name: http-admin
+              containerPort: 4445
+              protocol: TCP
+            - name: http-public
+              containerPort: 4444
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: 4445
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 4445
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 4445
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            failureThreshold: 60
+            successThreshold: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/hydra
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "common.names.fullname" . }}-hydra
+        - name: sqlite
+          emptyDir: {} # todo

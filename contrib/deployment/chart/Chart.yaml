@@ -1,0 +1,11 @@
+annotations:
+  licenses: Apache-2.0
+apiVersion: v2
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/bitnamicharts
+    tags:
+      - bitnami-common
+    version: 2.x.x
+name: idd4
+version: "0.1.0-gitshaplaceholder"

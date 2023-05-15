@@ -1,0 +1,37 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" .Values.ingress.annotations "context" $) | nindent 4 }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - kind: Rule
+    match: Host(`{{ .Values.config.hostname }}`) && (PathPrefix(`/`) || PathPrefix(`/flow`) || (Path(`/self-service/registration`) && Method(`POST`)))
+    services:
+    - kind: Service
+      name: {{ include "common.names.fullname" . }}-ui
+      namespace: {{ .Release.Namespace | quote }}
+      port: http
+  - kind: Rule
+    match: Host(`{{ .Values.config.hostname }}`) && (PathPrefix(`/connect`) || PathPrefix(`/oauth2`) || PathPrefix(`/userinfo`) || Path(`/.well-known/jwks.json`) || Path(`/.well-known/openid-configuration`))
+    services:
+    - kind: Service
+      name: {{ include "common.names.fullname" . }}-hydra-public
+      namespace: {{ .Release.Namespace | quote }}
+      port: http
+  - kind: Rule
+    match: Host(`{{ .Values.config.hostname }}`) && (PathPrefix(`/sessions`) || PathPrefix(`/self-service`) || Path(`/.well-known/ory/webauthn.js`)) && !(Path(`/self-service/registration`) && Method(`POST`))
+    services:
+    - kind: Service
+      name: {{ include "common.names.fullname" . }}-kratos-public
+      namespace: {{ .Release.Namespace | quote }}
+      port: http
+  tls:
+    secretName: {{ .Values.config.hostname | quote }}
+    domains:
+    - main: {{ .Values.config.hostname | quote }}

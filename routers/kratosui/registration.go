@@ -38,6 +38,7 @@ func GetRegistration(c *gin.Context) {
 
 	flow, _, err := container.KratosPublicClient.GetSelfServiceRegistrationFlow(context.Background()).Cookie(cookie).Id(id).Execute()
 	if err != nil {
+		log.Println(err)
 		c.Redirect(http.StatusSeeOther, config.Config.Urls["registration_url"])
 		return
 	}
@@ -94,8 +95,8 @@ func PostRegistration(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, c.GetHeader("referer"))
 	}
 
-	//todo: remove wellknown
-	if i != "wellknown" && !invite.CheckInvite(i, Endpoint_registration) {
+
+	if i != config.Config.MasterInvite && !invite.CheckInvite(i, Endpoint_registration) {
 		c.Redirect(http.StatusSeeOther, util.UriWithQuery("error", c.GetHeader("referer"), "invalid_invite"))
 		return
 	}
@@ -142,8 +143,7 @@ func PostRegistration(c *gin.Context) {
 
 	c.Status(res.StatusCode)
 
-	//todo: remove wellknown
-	if res.StatusCode == 303 && i != "wellknown" {
+	if res.StatusCode == 303 && i != config.Config.MasterInvite {
 		invite.InvalidateInvite(i, "")
 	}
 }

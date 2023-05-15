@@ -5,47 +5,49 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
-	Urls     map[string]string `json:"urls,omitempty"`
-	Hydra    *Hydra            `json:"hydra,omitempty"`
-	Kratos   *Kratos           `json:"kratos,omitempty"`
-	Keto     *Keto             `json:"keto,omitempty"`
-	Server   *Server           `json:"server,omitempty"`
-	Messages *Messages         `json:"messages,omitempty"`
+	Urls     map[string]string `yaml:"urls,omitempty"`
+	Hydra    *Hydra            `yaml:"hydra,omitempty"`
+	Kratos   *Kratos           `yaml:"kratos,omitempty"`
+	Keto     *Keto             `yaml:"keto,omitempty"`
+	Server   *Server           `yaml:"server,omitempty"`
+	Messages *Messages         `yaml:"messages,omitempty"`
+	MasterInvite string
 }
 
 type Messages struct {
-	NoInviteLinkErrorMessage      string `json:",omitempty"`
-	InvalidInviteLinkErrorMessage string `json:",omitempty"`
+	NoInviteLinkErrorMessage      string `yaml:",omitempty"`
+	InvalidInviteLinkErrorMessage string `yaml:",omitempty"`
 }
 
 type Hydra struct {
-	Session     *Session `json:"session,omitempty"`
-	AdminApiUrl string   `json:"admin_api_url,omitempty"`
+	Session     *Session `yaml:"session,omitempty"`
+	AdminApiUrl string   `yaml:"admin_api_url,omitempty"`
 }
 
 type Kratos struct {
-	AdminApiUrl  string `json:"admin_api_url,omitempty"`
-	PublicApiUrl string `json:"public_api_url,omitempty"`
+	AdminApiUrl  string `yaml:"admin_api_url"`
+	PublicApiUrl string `yaml:"public_api_url"`
 }
 
 type Session struct {
-	RememberFor int64 `json:"remember_for,omitempty"`
+	RememberFor int64 `yaml:"remember_for,omitempty"`
 }
 
 type Server struct {
-	RunMode  string `json:"run_mode,omitempty"`
-	Endpoint string `json:"endpoint,omitempty"`
+	RunMode  string `yaml:"run_mode,omitempty"`
+	Endpoint string `yaml:"endpoint,omitempty"`
 }
 
 type Keto struct {
-	WriteApiUrl string `json:"write_api_url,omitempty"`
-	ReadApiUrl  string `json:"read_api_url,omitempty"`
+	WriteApiUrl string `yaml:"write_api_url,omitempty"`
+	ReadApiUrl  string `yaml:"read_api_url,omitempty"`
 }
 
 var Config *Configuration
@@ -76,7 +78,7 @@ func defaultConfig() *Configuration {
 			Session: &Session{
 				RememberFor: 3600,
 			},
-			AdminApiUrl: "http://hydra:4444",
+			AdminApiUrl: "http://hydra:4445",
 		},
 		Kratos: &Kratos{
 			AdminApiUrl:  "http://kratos:4434",
@@ -94,6 +96,7 @@ func defaultConfig() *Configuration {
 			NoInviteLinkErrorMessage:      "Registration without an invite link is forbidden.",
 			InvalidInviteLinkErrorMessage: "Invite link is invalid.",
 		},
+		MasterInvite: "",
 	}
 }
 
@@ -125,6 +128,10 @@ func checkConfig(c *Configuration) error {
 		return errors.New("Keto.PublicApiUrl is invalid.")
 	}
 
+	if _, err := url.ParseRequestURI(c.MasterInvite); err != nil {
+		return errors.New("MasterInvite must not be empty.")
+	}
+
 	return nil
 }
 
@@ -142,6 +149,8 @@ func loadConfig(path string) (*Configuration, error) {
 			return nil, err
 		}
 	}
+
+	c.MasterInvite = os.Getenv("MASTER_INVITE")
 
 	if err := checkConfig(c); err != nil {
 		return nil, err

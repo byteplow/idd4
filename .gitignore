@@ -1,3 +1,5 @@
 .vscode
 tmp
 static/fonts
+contrib/deployment/chart/charts
+idd4-*.tgz

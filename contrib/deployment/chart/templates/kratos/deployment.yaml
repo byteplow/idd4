@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-kratos
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: kratos
+spec:
+  replicas: 1
+  strategy: 
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: kratos
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: kratos
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/kratos/configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        - name: automigrate
+          image: {{ include "kratos.image" . }}
+          imagePullPolicy: {{ .Values.kratos.image.pullPolicy | quote }}
+          command: ["kratos"]
+          args: ["migrate", "sql", "-e", "--yes", "--config", "/etc/kratos/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/kratos
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      containers:
+        - name: kratos
+          image: {{ include "kratos.image" . }}
+          imagePullPolicy: {{ .Values.kratos.image.pullPolicy | quote }}
+          command: ["kratos"]
+          args: ["serve", "all" , "--config" , "/etc/kratos/config.yaml"]
+          env:
+            - name: DSN
+              value: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+            - name: SECRETS_DEFAULT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-kratos
+                  key: secretsDefault
+                  optional: true
+            - name: SECRETS_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-kratos
+                  key: secretsCookie
+                  optional: true
+            - name: SECRETS_CIPHER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-kratos
+                  key: secretsCipher
+                  optional: true
+          ports:
+            - name: http-admin
+              containerPort: 4434
+              protocol: TCP
+            - name: http-public
+              containerPort: 4433
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /admin/health/ready
+              port: 4434
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /admin/health/ready
+              port: 4434
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /admin/health/ready
+              port: 4434
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            failureThreshold: 60
+            successThreshold: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/kratos
+              readOnly: true
+            - name: sqlite
+              mountPath: /var/lib/sqlite
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "common.names.fullname" . }}-kratos
+        - name: sqlite
+          emptyDir: {} # todo

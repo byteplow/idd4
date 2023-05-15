@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-ui
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+spec:
+  replicas: 1
+  strategy: 
+    type: Recreate
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ui
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: ui
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/ui/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: ui
+          image: {{ include "ui.image" . }}
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: 4455
+              protocol: TCP
+          #livenessProbe: {}
+          #readinessProbe: {}
+          #startupProbe: {}
+          securityContext: {}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/byteplow/idd4
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "common.names.fullname" . }}-ui

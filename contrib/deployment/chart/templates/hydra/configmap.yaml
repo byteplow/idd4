@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" . }}-hydra
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: hydra
+data:
+  config.yaml: |-
+    version: v1.11.8
+    serve:
+      cookies:
+        same_site_mode: Lax
+
+    urls:
+      self:
+        issuer: https://{{ .Values.config.hostname }}/
+      consent: https://{{ .Values.config.hostname }}/consent
+      login: https://{{ .Values.config.hostname }}/flow/login
+      logout: https://{{ .Values.config.hostname }}/flow/logout
+      error: https://{{ .Values.config.hostname }}/error
+
+    oidc:
+      subject_identifiers:
+        supported_types:
+          - pairwise
+          - public

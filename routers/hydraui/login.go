@@ -23,6 +23,7 @@ func GetLogin(c *gin.Context) {
 
 	loginRequest, _, err := container.HydraAdminClient.AdminApi.GetLoginRequest(context.Background()).LoginChallenge(challenge).Execute()
 	if err != nil {
+		log.Println(loginRequest)
 		panic(err)
 	}
 
@@ -47,7 +48,7 @@ func GetLogin(c *gin.Context) {
 		return
 	}
 
-	session, _, err := container.KratosAdminClient.ToSession(context.Background()).Cookie(cookie.String()).Execute()
+	session, _, err := container.KratosPublicClient.ToSession(context.Background()).Cookie(cookie.String()).Execute()
 	if err != nil {
 		log.Println(err)
 		c.Redirect(http.StatusSeeOther, loginUrl)

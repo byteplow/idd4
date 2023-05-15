@@ -127,6 +127,7 @@ services:
   ui:
     image: cosmtrek/air
     working_dir: /workspace
+    command: --build.cmd "go build -o bin/api -buildvcs=false" --build.bin "./bin/api"
     volumes:
       - ".:/workspace"
       - "./contrib/docker-compose/development:/etc/byteplow/idd4"
