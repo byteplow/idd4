@@ -128,7 +128,7 @@ func checkConfig(c *Configuration) error {
 		return errors.New("Keto.PublicApiUrl is invalid.")
 	}
 
-	if _, err := url.ParseRequestURI(c.MasterInvite); err != nil {
+	if c.MasterInvite == "" {
 		return errors.New("MasterInvite must not be empty.")
 	}
 

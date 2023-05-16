@@ -11,5 +11,6 @@ helmbuild:
 publisch: build helmbuild
 	podman tag docker.io/byteplow/idd4 docker.io/byteplow/idd4:$$(git rev-parse --short HEAD)
 	podman push docker.io/byteplow/idd4:$$(git rev-parse --short HEAD)
+	podman push docker.io/byteplow/idd4
 
 	helm push idd4-*-$$(git rev-parse --short HEAD).tgz oci://docker.io/byteplow

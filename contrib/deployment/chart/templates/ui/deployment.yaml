@@ -27,6 +27,13 @@ spec:
             - name: http
               containerPort: 4455
               protocol: TCP
+          env:
+            - name: MASTER_INVITE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.names.fullname" . }}-ui
+                  key: masterInvite
+                  optional: true
           #livenessProbe: {}
           #readinessProbe: {}
           #startupProbe: {}
