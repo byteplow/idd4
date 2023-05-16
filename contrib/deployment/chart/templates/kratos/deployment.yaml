@@ -132,4 +132,4 @@ spec:
           configMap:
             name: {{ include "common.names.fullname" . }}-kratos
         - name: sqlite
-          emptyDir: {} # todo
+          claimName: {{ default .Values.kratos.persistence.existingPvc (printf "%s-kratos" (include "common.names.fullname" .)) }}

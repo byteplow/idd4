@@ -1,0 +1,20 @@
+{{ if not .Values.kratos.persistence.existingPvc }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.names.fullname" . }}-kratos
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: kratos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{{{ if not .Values.kratos.persistence.size }}}}  10Mi
+
+  {{ $storageClassName = default .Values.kratos.persistence.storageClassName .Values.global.storageClassName }}
+  {{ if $storageClassName }}
+  storageClassName: {{ $storageClassName }}
+  {{ end }}
+{{ end }}

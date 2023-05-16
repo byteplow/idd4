@@ -133,4 +133,5 @@ spec:
           configMap:
             name: {{ include "common.names.fullname" . }}-hydra
         - name: sqlite
-          emptyDir: {} # todo
+          persistentVolumeClaim:
+            claimName: {{ default .Values.hydra.persistence.existingPvc (printf "%s-hydra" (include "common.names.fullname" .)) }}

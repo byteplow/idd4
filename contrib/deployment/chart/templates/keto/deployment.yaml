@@ -120,4 +120,4 @@ spec:
           configMap:
             name: {{ include "common.names.fullname" . }}-keto
         - name: sqlite
-          emptyDir: {} # todo
+            claimName: {{ default .Values.keto.persistence.existingPvc (printf "%s-keto" (include "common.names.fullname" .)) }}

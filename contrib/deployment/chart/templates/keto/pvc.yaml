@@ -1,0 +1,20 @@
+{{ if not .Values.keto.persistence.existingPvc }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.names.fullname" . }}-keto
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: keto
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{{{ if not .Values.keto.persistence.size }}}}  10Mi
+
+  {{ $storageClassName = default .Values.keto.persistence.storageClassName .Values.global.storageClassName }}
+  {{ if $storageClassName }}
+  storageClassName: {{ $storageClassName }}
+  {{ end }}
+{{ end }}

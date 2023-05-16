@@ -1,0 +1,20 @@
+{{ if not .Values.hydra.persistence.existingPvc }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.names.fullname" . }}-hydra
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: hydra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{{{ if not .Values.hydra.persistence.size }}}}  10Mi
+
+  {{ $storageClassName = default .Values.hydra.persistence.storageClassName .Values.global.storageClassName }}
+  {{ if $storageClassName }}
+  storageClassName: {{ $storageClassName }}
+  {{ end }}
+{{ end }}

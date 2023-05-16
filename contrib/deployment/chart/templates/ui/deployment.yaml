@@ -34,10 +34,48 @@ spec:
                   name: {{ include "common.names.fullname" . }}-ui
                   key: masterInvite
                   optional: true
-          #livenessProbe: {}
-          #readinessProbe: {}
-          #startupProbe: {}
-          securityContext: {}
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: 4455
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 4455
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            initialDelaySeconds: 0
+            periodSeconds: 0
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /login
+              port: 4455
+              httpHeaders:
+                - name: Host
+                  value: '127.0.0.1'
+            failureThreshold: 60
+            successThreshold: 1
+            periodSeconds: 1
+            timeoutSeconds: 1
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            privileged: false
           volumeMounts:
             - name: config
               mountPath: /etc/byteplow/idd4
