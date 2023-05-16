@@ -8,4 +8,4 @@ dependencies:
       - bitnami-common
     version: 2.x.x
 name: idd4
-version: "0.1.0-gitshaplaceholder"
+version: "v0.0.0-versionPlaceholder"

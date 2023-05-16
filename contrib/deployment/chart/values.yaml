@@ -51,7 +51,7 @@ ui:
   image:
     registry: docker.io
     repository: byteplow/idd4
-    tag: "gitshaplaceholder"
+    tag: "imageVersionPlaceholder"
     digest: ""
     pullPolicy: IfNotPresent
     imagePullSecrets: []

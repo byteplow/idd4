@@ -1,16 +1,22 @@
+version=$(shell git describe --tags | sed 's/-/-alpha/' | sed 's/-/+/2')$(shell test -z "$$(git status --porcelain)" || echo -dirty)
+imageVersion=$(shell echo $(version) | cut -c2-)
+
 build:
 	podman build -t docker.io/byteplow/idd4 .
 
-helmbuild:
-	sed -i "s/gitshaplaceholder/$$(git rev-parse --short HEAD)/g" contrib/deployment/chart/values.yaml
-	sed -i "s/gitshaplaceholder/$$(git rev-parse --short HEAD)/g" contrib/deployment/chart/Chart.yaml
+package:
+	sed -i "s/imageVersionPlaceholder/$(imageVersion)/g" contrib/deployment/chart/values.yaml
+	sed -i "s/v0.0.0-versionPlaceholder/$(version)/g" contrib/deployment/chart/Chart.yaml
 	helm package contrib/deployment/chart
-	sed -i "s/$$(git rev-parse --short HEAD)/gitshaplaceholder/g" contrib/deployment/chart/values.yaml
-	sed -i "s/$$(git rev-parse --short HEAD)/gitshaplaceholder/g" contrib/deployment/chart/Chart.yaml
+	sed -i "s/$(imageVersion)/imageVersionPlaceholder/g" contrib/deployment/chart/values.yaml
+	sed -i "s/$(version)/v0.0.0-versionPlaceholder/g" contrib/deployment/chart/Chart.yaml
 
-publisch: build helmbuild
-	podman tag docker.io/byteplow/idd4 docker.io/byteplow/idd4:$$(git rev-parse --short HEAD)
-	podman push docker.io/byteplow/idd4:$$(git rev-parse --short HEAD)
+publish: package build
 	podman push docker.io/byteplow/idd4
+	podman tag docker.io/byteplow/idd4 docker.io/byteplow/idd4:$(imageVersion)
+	podman push docker.io/byteplow/idd4:$(imageVersion)
 
-	helm push idd4-*-$$(git rev-parse --short HEAD).tgz oci://docker.io/byteplow
+	helm push idd4-$(version).tgz oci://docker.io/byteplow
+
+install:
+	helm upgrade --install --set ui.image.tag=latest -f values.yaml $(shell cat releasename) ./contrib/deployment/chart/
