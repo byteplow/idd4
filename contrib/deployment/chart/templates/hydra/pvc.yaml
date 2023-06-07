@@ -11,7 +11,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{{{ if not .Values.hydra.persistence.size }}}}  10Mi
+      storage: {{ if not .Values.hydra.persistence.size }}
 
   {{ $storageClassName = default .Values.hydra.persistence.storageClassName .Values.global.storageClassName }}
   {{ if $storageClassName }}

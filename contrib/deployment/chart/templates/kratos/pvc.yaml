@@ -11,7 +11,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{{{ if not .Values.kratos.persistence.size }}}}  10Mi
+      storage: {{ if not .Values.kratos.persistence.size }}
 
   {{ $storageClassName = default .Values.kratos.persistence.storageClassName .Values.global.storageClassName }}
   {{ if $storageClassName }}
